@@ -27,18 +27,19 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.env.Environment;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.SerializationFeature;
 
 /**
  * Event loop and necessary configurations to support AWS Lambda Custom Runtime
@@ -107,8 +108,7 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 		RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(eventUri))
 				.header("User-Agent", USER_AGENT_VALUE).build();
 		RestTemplate rest = new RestTemplate();
-		ObjectMapper mapper = new ObjectMapper();//.getBean(ObjectMapper.class);
-		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		JsonMapper mapper = JsonMapper.builder().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).build();// .getBean(JsonMapper.class);
 		AwsProxyHttpServletResponseWriter responseWriter = new AwsProxyHttpServletResponseWriter();
 
 		logger.info("Entering event loop");
@@ -121,32 +121,32 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 					logger.debug("New Event received from AWS Gateway: " + incomingEvent.getBody());
 				}
 				String requestId = incomingEvent.getHeaders().getFirst("Lambda-Runtime-Aws-Request-Id");
-				
+
 				try {
 					logger.debug("Submitting request to the user's web application");
 
 					AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(
 							AwsSpringHttpProcessingUtils.generateHttpServletRequest(incomingEvent.getBody(),
-									null, mvc.getServletContext(), mapper), mvc, responseWriter);
+									null, mvc.getServletContext(), mapper),
+							mvc, responseWriter);
 					if (logger.isDebugEnabled()) {
-						logger.debug("Received response - body: " + awsResponse.getBody() + 
+						logger.debug("Received response - body: " + awsResponse.getBody() +
 								"; status: " + awsResponse.getStatusCode() + "; headers: " + awsResponse.getHeaders());
 					}
 
 					String invocationUrl = MessageFormat.format(LAMBDA_INVOCATION_URL_TEMPLATE, runtimeApi,
 							LAMBDA_VERSION_DATE, requestId);
-					
-		            ResponseEntity<byte[]> result = rest.exchange(RequestEntity.post(URI.create(invocationUrl))
+
+					ResponseEntity<byte[]> result = rest.exchange(RequestEntity.post(URI.create(invocationUrl))
 							.header("User-Agent", USER_AGENT_VALUE).body(awsResponse), byte[].class);
-		            if (logger.isDebugEnabled()) {
-						logger.debug("Response sent: body: " + result.getBody() + 
+					if (logger.isDebugEnabled()) {
+						logger.debug("Response sent: body: " + result.getBody() +
 								"; status: " + result.getStatusCode() + "; headers: " + result.getHeaders());
 					}
-		            if (logger.isInfoEnabled()) {
+					if (logger.isInfoEnabled()) {
 						logger.info("Result POST status: " + result);
 					}
-				} 
-				catch (Exception e) {
+				} catch (Exception e) {
 					logger.error(e);
 					this.propagateAwsError(requestId, e, mapper, runtimeApi, rest);
 				}
@@ -154,7 +154,8 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 		}
 	}
 
-	private void propagateAwsError(String requestId, Exception e, ObjectMapper mapper, String runtimeApi, RestTemplate rest) {
+	private void propagateAwsError(String requestId, Exception e, JsonMapper mapper, String runtimeApi,
+			RestTemplate rest) {
 		String errorMessage = e.getMessage();
 		String errorType = e.getClass().getSimpleName();
 		StringWriter sw = new StringWriter();
@@ -167,15 +168,15 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 		em.put("stackTrace", stackTrace);
 		try {
 			byte[] outputBody = mapper.writeValueAsBytes(em);
-			String errorUrl = MessageFormat.format(LAMBDA_ERROR_URL_TEMPLATE, runtimeApi, LAMBDA_VERSION_DATE, requestId);
+			String errorUrl = MessageFormat.format(LAMBDA_ERROR_URL_TEMPLATE, runtimeApi, LAMBDA_VERSION_DATE,
+					requestId);
 			ResponseEntity<Object> result = rest.exchange(RequestEntity.post(URI.create(errorUrl))
 					.header("User-Agent", USER_AGENT_VALUE)
 					.body(outputBody), Object.class);
 			if (logger.isInfoEnabled()) {
 				logger.info("Result ERROR status: " + result.getStatusCode());
 			}
-		}
-		catch (Exception e2) {
+		} catch (Exception e2) {
 			throw new IllegalArgumentException("Failed to report error", e2);
 		}
 	}

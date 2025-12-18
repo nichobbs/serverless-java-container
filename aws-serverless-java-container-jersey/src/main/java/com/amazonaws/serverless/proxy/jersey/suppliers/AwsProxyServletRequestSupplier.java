@@ -12,7 +12,6 @@
  */
 package com.amazonaws.serverless.proxy.jersey.suppliers;
 
-
 import org.glassfish.jersey.server.ContainerRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,15 +21,16 @@ import java.util.function.Supplier;
 
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
 
-
 /**
- * Implementation of Jersey's <code>Factory</code> object for <code>HttpServletRequest</code> objects. This can be used
- * by Jersey to generate a Servlet request given an <code>AwsProxyRequest</code> event.
+ * Implementation of Jersey's <code>Factory</code> object for
+ * <code>HttpServletRequest</code> objects. This can be used
+ * by Jersey to generate a Servlet request given an <code>AwsProxyRequest</code>
+ * event.
  *
  * <pre>
  * <code>
  *     ResourceConfig app = new ResourceConfig().packages("my.app.package")
- *         .register(new AbstractBinder() {
+ *         .register(new BlindBinder() {
  *             {@literal @}Override
  *             protected void configure() {
  *                 bindFactory(AwsProxyServletRequestSupplier.class)
@@ -43,11 +43,12 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  */
 public class AwsProxyServletRequestSupplier implements Supplier<HttpServletRequest> {
 
-    @Context ContainerRequest currentRequest;
+    @Context
+    ContainerRequest currentRequest;
 
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Implementation - Factory
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     @Override
     public HttpServletRequest get() {
@@ -55,6 +56,6 @@ public class AwsProxyServletRequestSupplier implements Supplier<HttpServletReque
     }
 
     private HttpServletRequest getServletRequest() {
-        return (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
+        return (HttpServletRequest) currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
     }
 }

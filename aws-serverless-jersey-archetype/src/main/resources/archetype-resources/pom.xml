@@ -1,6 +1,6 @@
-#set($dollar = '$')
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>\${groupId}</groupId>
@@ -10,15 +10,6 @@
 
     <name>Serverless Jersey API</name>
     <url>https://github.com/aws/serverless-java-container</url>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-
-        <jersey.version>3.1.10</jersey.version>
-        <jackson.version>2.18.3</jackson.version>
-        <junit.version>5.12.1</junit.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -44,33 +35,31 @@
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>\${jersey.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <groupId>tools.jackson.core</groupId>
                     <artifactId>jackson-annotations</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <groupId>tools.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <groupId>tools.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>\${jackson.version}</version>
+
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
-            <version>\${jersey.version}</version>
             <!-- excluding redundant javax.inject dependency -->
             <exclusions>
                 <exclusion>
@@ -86,18 +75,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>${junit.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <profiles>
         <profile>
@@ -163,7 +140,8 @@
                                     <goal>copy-dependencies</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${dollar}{project.build.directory}${dollar}{file.separator}lib</outputDirectory>
+                                    <outputDirectory>
+                                        ${dollar}{project.build.directory}${dollar}{file.separator}lib</outputDirectory>
                                     <includeScope>runtime</includeScope>
                                 </configuration>
                             </execution>
@@ -181,9 +159,11 @@
                                     <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>${dollar}{project.artifactId}-${dollar}{project.version}</finalName>
+                                    <finalName>
+                                        ${dollar}{project.artifactId}-${dollar}{project.version}</finalName>
                                     <descriptors>
-                                        <descriptor>src${dollar}{file.separator}assembly${dollar}{file.separator}bin.xml</descriptor>
+                                        <descriptor>
+                                            src${dollar}{file.separator}assembly${dollar}{file.separator}bin.xml</descriptor>
                                     </descriptors>
                                     <attach>false</attach>
                                 </configuration>

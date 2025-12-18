@@ -126,5 +126,4 @@ public class HttpApiV2ProxyRequestContext {
         this.elb = context;
     }
 
-    
 }

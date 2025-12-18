@@ -16,7 +16,7 @@ import org.springframework.util.CollectionUtils;
 import com.amazonaws.serverless.proxy.spring.servletapp.MessageData;
 import com.amazonaws.serverless.proxy.spring.servletapp.ServletApplication;
 import com.amazonaws.serverless.proxy.spring.servletapp.UserData;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.ws.rs.core.HttpHeaders;
 
@@ -195,22 +195,22 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 
     private SpringDelegatingLambdaContainerHandler handler;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private JsonMapper mapper = JsonMapper.builder().build();
 
     public void initServletAppTest() throws ContainerInitializationException {
         this.handler = new SpringDelegatingLambdaContainerHandler(ServletApplication.class);
     }
 
     public static Collection<String> data() {
-        return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2});
+        return Arrays.asList(new String[] { API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2 });
     }
 
     @MethodSource("data")
     @ParameterizedTest
     public void validateComplesrequest(String jsonEvent) throws Exception {
         initServletAppTest();
-        InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", 
-        		"/foo/male/list/24", "{\"name\":\"bob\"}", false,null));
+        InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST",
+                "/foo/male/list/24", "{\"name\":\"bob\"}", false, null));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         handler.handleRequest(targetStream, output, null);
         Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
@@ -220,12 +220,13 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         assertEquals("24", responseBody[1]);
         assertEquals("Ricky", responseBody[2]);
     }
-    
+
     @MethodSource("data")
     @ParameterizedTest
     public void testAsyncPost(String jsonEvent) throws Exception {
         initServletAppTest();
-        InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/async", "{\"name\":\"bob\"}",false, null));
+        InputStream targetStream = new ByteArrayInputStream(
+                this.generateHttpRequest(jsonEvent, "POST", "/async", "{\"name\":\"bob\"}", false, null));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         handler.handleRequest(targetStream, output, null);
         Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
@@ -238,7 +239,8 @@ public class SpringDelegatingLambdaContainerHandlerTests {
     public void testValidate400(String jsonEvent) throws Exception {
         initServletAppTest();
         UserData ud = new UserData();
-        InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/validate", mapper.writeValueAsString(ud),false, null));
+        InputStream targetStream = new ByteArrayInputStream(
+                this.generateHttpRequest(jsonEvent, "POST", "/validate", mapper.writeValueAsString(ud), false, null));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         handler.handleRequest(targetStream, output, null);
         Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
@@ -254,7 +256,8 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         ud.setFirstName("bob");
         ud.setLastName("smith");
         ud.setEmail("foo@bar.com");
-        InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/validate", mapper.writeValueAsString(ud),false, null));
+        InputStream targetStream = new ByteArrayInputStream(
+                this.generateHttpRequest(jsonEvent, "POST", "/validate", mapper.writeValueAsString(ud), false, null));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         handler.handleRequest(targetStream, output, null);
         Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
@@ -271,7 +274,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         ud.setLastName("smith");
         ud.setEmail("foo@bar.com");
         InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/validate",
-                Base64.getMimeEncoder().encodeToString(mapper.writeValueAsString(ud).getBytes()),true, null));
+                Base64.getMimeEncoder().encodeToString(mapper.writeValueAsString(ud).getBytes()), true, null));
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         handler.handleRequest(targetStream, output, null);
@@ -280,13 +283,12 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         assertEquals("VALID", result.get("body"));
     }
 
-
     @MethodSource("data")
     @ParameterizedTest
     public void messageObject_parsesObject_returnsCorrectMessage(String jsonEvent) throws Exception {
         initServletAppTest();
         InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/message",
-                mapper.writeValueAsString(new MessageData("test message")),false, null));
+                mapper.writeValueAsString(new MessageData("test message")), false, null));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         handler.handleRequest(targetStream, output, null);
         Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
@@ -294,9 +296,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         assertEquals("test message", result.get("body"));
     }
 
-
-
-    @SuppressWarnings({"unchecked" })
+    @SuppressWarnings({ "unchecked" })
     @MethodSource("data")
     @ParameterizedTest
     void messageObject_propertiesInContentType_returnsCorrectMessage(String jsonEvent) throws Exception {
@@ -306,7 +306,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         headers.put(HttpHeaders.CONTENT_TYPE, "application/json;v=1");
         headers.put(HttpHeaders.ACCEPT, "application/json;v=1");
         InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/message",
-                mapper.writeValueAsString(new MessageData("test message")),false, headers));
+                mapper.writeValueAsString(new MessageData("test message")), false, headers));
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         handler.handleRequest(targetStream, output, null);
@@ -314,16 +314,18 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         assertEquals("test message", result.get("body"));
     }
 
-    private byte[] generateHttpRequest(String jsonEvent, String method, String path, String body,boolean isBase64Encoded, Map headers) throws Exception {
+    private byte[] generateHttpRequest(String jsonEvent, String method, String path, String body,
+            boolean isBase64Encoded, Map headers) throws Exception {
         Map requestMap = mapper.readValue(jsonEvent, Map.class);
         if (requestMap.get("version").equals("2.0")) {
-            return generateHttpRequest2(requestMap, method, path, body, isBase64Encoded,headers);
+            return generateHttpRequest2(requestMap, method, path, body, isBase64Encoded, headers);
         }
-        return generateHttpRequest(requestMap, method, path, body,isBase64Encoded, headers);
+        return generateHttpRequest(requestMap, method, path, body, isBase64Encoded, headers);
     }
 
-    @SuppressWarnings({ "unchecked"})
-    private byte[] generateHttpRequest(Map requestMap, String method, String path, String body,boolean isBase64Encoded, Map headers) throws Exception {
+    @SuppressWarnings({ "unchecked" })
+    private byte[] generateHttpRequest(Map requestMap, String method, String path, String body, boolean isBase64Encoded,
+            Map headers) throws Exception {
         requestMap.put("path", path);
         requestMap.put("httpMethod", method);
         requestMap.put("body", body);
@@ -334,8 +336,9 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         return mapper.writeValueAsBytes(requestMap);
     }
 
-    @SuppressWarnings({ "unchecked"})
-    private byte[] generateHttpRequest2(Map requestMap, String method, String path, String body,boolean isBase64Encoded, Map headers) throws Exception {
+    @SuppressWarnings({ "unchecked" })
+    private byte[] generateHttpRequest2(Map requestMap, String method, String path, String body,
+            boolean isBase64Encoded, Map headers) throws Exception {
         Map map = mapper.readValue(API_GATEWAY_EVENT_V2, Map.class);
         Map http = (Map) ((Map) map.get("requestContext")).get("http");
         http.put("path", path);

@@ -20,7 +20,7 @@ updates:
           - "org.slf4j:*"
       jackson:
         patterns:
-          - "com.fasterxml.jackson.*:*"
+          - "tools.jackson.*:*"
       log4j:
         patterns:
           - "org.apache.logging.log4j:*"
@@ -54,7 +54,7 @@ updates:
           - "org.apache.logging.log4j:*"
       jackson:
         patterns:
-          - "com.fasterxml.jackson.*:*"
+          - "tools.jackson.*:*"
       httpclient:
         patterns:
           - "org.apache.httpcomponents.client5:*"

@@ -15,7 +15,7 @@ import org.springframework.cloud.function.serverless.web.ServerlessMVC;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -36,37 +36,41 @@ import jakarta.servlet.http.HttpServletRequest;
  * An implementation of {@link RequestStreamHandler} which delegates to
  * Spring Cloud Function serverless web module managed by Spring team.
  *
- * It requires no sub-classing from the user other then being identified as "Handler".
- * The configuration class(es) should be provided via MAIN_CLASS environment variable.
+ * It requires no sub-classing from the user other then being identified as
+ * "Handler".
+ * The configuration class(es) should be provided via MAIN_CLASS environment
+ * variable.
  *
  */
 public class SpringDelegatingLambdaContainerHandler implements RequestStreamHandler {
     private final ServerlessMVC mvc;
-    private final ObjectMapper mapper;
+    private final JsonMapper mapper;
     private final AwsProxyHttpServletResponseWriter responseWriter;
 
     public SpringDelegatingLambdaContainerHandler() throws ContainerInitializationException {
-        this(new Class[] {FunctionClassUtils.getStartClass()});
+        this(new Class[] { FunctionClassUtils.getStartClass() });
     }
 
-    public SpringDelegatingLambdaContainerHandler(final Class<?>... startupClasses) throws ContainerInitializationException {
+    public SpringDelegatingLambdaContainerHandler(final Class<?>... startupClasses)
+            throws ContainerInitializationException {
         SpringDelegatingInitHandler initHandler = new SpringDelegatingInitHandler(startupClasses);
         if (InitializationTypeHelper.isAsyncInitializationDisabled()) {
             initHandler.initialize();
-    	} else {
+        } else {
             AsyncInitializationWrapper asyncInitWrapper = new AsyncInitializationWrapper();
             asyncInitWrapper.start(initHandler);
         }
         this.mvc = initHandler.getMvc();
-        this.mapper = new ObjectMapper();
+        this.mapper = JsonMapper.builder().build();
         this.responseWriter = new AwsProxyHttpServletResponseWriter();
     }
 
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context lambdaContext) throws IOException {
         HttpServletRequest httpServletRequest = AwsSpringHttpProcessingUtils
-        		.generateHttpServletRequest(input, lambdaContext, this.mvc.getServletContext(), this.mapper);
-        AwsProxyResponse awsProxyResponse = AwsSpringHttpProcessingUtils.processRequest(httpServletRequest, mvc, responseWriter);
+                .generateHttpServletRequest(input, lambdaContext, this.mvc.getServletContext(), this.mapper);
+        AwsProxyResponse awsProxyResponse = AwsSpringHttpProcessingUtils.processRequest(httpServletRequest, mvc,
+                responseWriter);
         this.mapper.writeValue(output, awsProxyResponse);
     }
 

@@ -12,7 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
 import org.springframework.cloud.function.serverless.web.ServerlessServletContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -27,15 +27,15 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsSpringHttpProcessingUtilsTests {
-	
-	private static String API_GATEWAY_EVENT = "{\n"
+
+    private static String API_GATEWAY_EVENT = "{\n"
             + "    \"version\": \"1.0\",\n"
             + "    \"resource\": \"$default\",\n"
             + "    \"path\": \"/async\",\n"
@@ -127,7 +127,7 @@ public class AwsSpringHttpProcessingUtilsTests {
             "  \"headers\": {\n" +
             "    \"header1\": \"value1\",\n" +
             "    \"header2\": \"value1,value2\",\n" +
-            "    \"User-Agent\": \"curl/7.79.1\",\n" + 
+            "    \"User-Agent\": \"curl/7.79.1\",\n" +
             "    \"X-Forwarded-Port\": \"443\"\n" +
             "  },\n" +
             "  \"queryStringParameters\": {\n" +
@@ -187,104 +187,111 @@ public class AwsSpringHttpProcessingUtilsTests {
             "  }\n" +
             "}";
 
-	private static final String ALB_EVENT = "{\n" +
-			"    \"requestContext\": {\n" +
-			"        \"elb\": {\n" +
-			"            \"targetGroupArn\": \"arn:aws:elasticloadbalancing:region:123456789012:targetgroup/my-target-group/6d0ecf831eec9f09\"\n" +
-			"        }\n" +
-			"    },\n" +
-			"    \"httpMethod\": \"POST\",\n" +
-			"    \"path\": \"/async\",\n" +
-			"    \"multiValueQueryStringParameters\": { \"parameter1\": [\"value1\", \"value2\"], \"parameter2\": [\"1970-01-01T00%3A00%3A00.004Z\"]},\n" +
-			"    \"multiValueHeaders\": {\n" +
-			"        \"accept\": [\"text/html,application/xhtml+xml\"],\n" +
-			"        \"accept-language\": [\"en-US,en;q=0.8\"],\n" +
-			"        \"content-type\": [\"text/plain\"],\n" +
-			"        \"cookie\": [\"cookies\"],\n" +
-			"        \"host\": [\"lambda-846800462-us-east-2.elb.amazonaws.com\"],\n" +
-			"    	 \"User-Agent\": [\"curl/7.79.1\"],\n" +
-			"        \"x-amzn-trace-id\": [\"Root=1-5bdb40ca-556d8b0c50dc66f0511bf520\"],\n" +
-			"        \"x-forwarded-for\": [\"72.21.198.66\"],\n" +
-			"        \"x-forwarded-port\": [\"443\"],\n" +
-			"        \"x-forwarded-proto\": [\"https\"]\n" +
-			"    },\n" +
-			"    \"isBase64Encoded\": false,\n" +
-			"    \"body\": \"request_body\"\n" +
-			"}";
+    private static final String ALB_EVENT = "{\n" +
+            "    \"requestContext\": {\n" +
+            "        \"elb\": {\n" +
+            "            \"targetGroupArn\": \"arn:aws:elasticloadbalancing:region:123456789012:targetgroup/my-target-group/6d0ecf831eec9f09\"\n"
+            +
+            "        }\n" +
+            "    },\n" +
+            "    \"httpMethod\": \"POST\",\n" +
+            "    \"path\": \"/async\",\n" +
+            "    \"multiValueQueryStringParameters\": { \"parameter1\": [\"value1\", \"value2\"], \"parameter2\": [\"1970-01-01T00%3A00%3A00.004Z\"]},\n"
+            +
+            "    \"multiValueHeaders\": {\n" +
+            "        \"accept\": [\"text/html,application/xhtml+xml\"],\n" +
+            "        \"accept-language\": [\"en-US,en;q=0.8\"],\n" +
+            "        \"content-type\": [\"text/plain\"],\n" +
+            "        \"cookie\": [\"cookies\"],\n" +
+            "        \"host\": [\"lambda-846800462-us-east-2.elb.amazonaws.com\"],\n" +
+            "    	 \"User-Agent\": [\"curl/7.79.1\"],\n" +
+            "        \"x-amzn-trace-id\": [\"Root=1-5bdb40ca-556d8b0c50dc66f0511bf520\"],\n" +
+            "        \"x-forwarded-for\": [\"72.21.198.66\"],\n" +
+            "        \"x-forwarded-port\": [\"443\"],\n" +
+            "        \"x-forwarded-proto\": [\"https\"]\n" +
+            "    },\n" +
+            "    \"isBase64Encoded\": false,\n" +
+            "    \"body\": \"request_body\"\n" +
+            "}";
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final JsonMapper mapper = JsonMapper.builder().build();
 
     public static Collection<String> data() {
-        return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2, ALB_EVENT});
+        return Arrays.asList(new String[] { API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2, ALB_EVENT });
     }
 
     @MethodSource("data")
     @ParameterizedTest
-	public void validateHttpServletRequestGenerationWithInputStream(String jsonEvent) {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream(jsonEvent.getBytes(StandardCharsets.UTF_8));
-		ServerlessServletContext servletContext = new ServerlessServletContext();
-		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(inputStream, null, servletContext, mapper);
-		assertRequest(request);
-	}
+    public void validateHttpServletRequestGenerationWithInputStream(String jsonEvent) {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(jsonEvent.getBytes(StandardCharsets.UTF_8));
+        ServerlessServletContext servletContext = new ServerlessServletContext();
+        HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(inputStream, null,
+                servletContext, mapper);
+        assertRequest(request);
+    }
 
-	private static void assertRequest(HttpServletRequest request) {
-		assertEquals("curl/7.79.1", request.getHeader("User-Agent"));
-		assertEquals("443", request.getHeader("X-Forwarded-Port"));
-		assertEquals("POST", request.getMethod());
-		assertEquals("/async", request.getRequestURI());
-		assertNotNull(request.getServletContext());
-		// parameter handling for 2.0 requests is currently not spec compliant and to be fixed in future version
-		// see also GitHub issue https://github.com/aws/serverless-java-container/issues/1278
-		if (!(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY) instanceof HttpApiV2ProxyRequest)) {
-			assertEquals("value1", request.getParameter("parameter1"));
-			assertArrayEquals(new String[]{"value1", "value2"}, request.getParameterValues("parameter1"));
-		}
-		if (request.getAttribute(RequestReader.ALB_CONTEXT_PROPERTY) instanceof AlbContext) {
-			// query params should be decoded
-			assertEquals("1970-01-01T00:00:00.004Z", request.getParameter("parameter2"));
-		}
-	}
-    
+    private static void assertRequest(HttpServletRequest request) {
+        assertEquals("curl/7.79.1", request.getHeader("User-Agent"));
+        assertEquals("443", request.getHeader("X-Forwarded-Port"));
+        assertEquals("POST", request.getMethod());
+        assertEquals("/async", request.getRequestURI());
+        assertNotNull(request.getServletContext());
+        // parameter handling for 2.0 requests is currently not spec compliant and to be
+        // fixed in future version
+        // see also GitHub issue
+        // https://github.com/aws/serverless-java-container/issues/1278
+        if (!(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY) instanceof HttpApiV2ProxyRequest)) {
+            assertEquals("value1", request.getParameter("parameter1"));
+            assertArrayEquals(new String[] { "value1", "value2" }, request.getParameterValues("parameter1"));
+        }
+        if (request.getAttribute(RequestReader.ALB_CONTEXT_PROPERTY) instanceof AlbContext) {
+            // query params should be decoded
+            assertEquals("1970-01-01T00:00:00.004Z", request.getParameter("parameter2"));
+        }
+    }
+
     @MethodSource("data")
     @ParameterizedTest
-	public void validateHttpServletRequestGenerationWithJson(String jsonEvent) {
-		ServerlessServletContext servletContext = new ServerlessServletContext();
-		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
-		// spot check some headers
-		assertRequest(request);
-	}
-    
+    public void validateHttpServletRequestGenerationWithJson(String jsonEvent) {
+        ServerlessServletContext servletContext = new ServerlessServletContext();
+        HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null,
+                servletContext, mapper);
+        // spot check some headers
+        assertRequest(request);
+    }
+
     @MethodSource("data")
     @ParameterizedTest
     public void validateRequestResponse(String jsonEvent) throws Exception {
-    	try (ConfigurableApplicationContext context = SpringApplication.run(EmptyApplication.class);) {
-    		ServerlessMVC mvc = ServerlessMVC.INSTANCE((ServletWebServerApplicationContext) context);
-    		AwsProxyHttpServletResponseWriter responseWriter = new AwsProxyHttpServletResponseWriter();
-    		AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(
-					AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null,
-							mvc.getServletContext(), mapper), mvc, responseWriter);
-    		assertEquals("hello", awsResponse.getBody());
-    		assertEquals(200, awsResponse.getStatusCode());
-    	}
-    	
+        try (ConfigurableApplicationContext context = SpringApplication.run(EmptyApplication.class);) {
+            ServerlessMVC mvc = ServerlessMVC.INSTANCE((ServletWebServerApplicationContext) context);
+            AwsProxyHttpServletResponseWriter responseWriter = new AwsProxyHttpServletResponseWriter();
+            AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(
+                    AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null,
+                            mvc.getServletContext(), mapper),
+                    mvc, responseWriter);
+            assertEquals("hello", awsResponse.getBody());
+            assertEquals(200, awsResponse.getStatusCode());
+        }
+
     }
-    
+
     @EnableAutoConfiguration
     @Configuration
     public static class EmptyApplication {
-    	@RestController
+        @RestController
         @EnableWebMvc
         public static class MyController {
-        	@PostMapping(path = "/async")
-        	public String async(@RequestBody String body) {
-        		return "hello";
-        	}
+            @PostMapping(path = "/async")
+            public String async(@RequestBody String body) {
+                return "hello";
+            }
         }
-    	
-    	@Bean
-    	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    		http.csrf((csrf) -> csrf.disable());
-    		return http.build();
-    	}
+
+        @Bean
+        SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+            http.csrf((csrf) -> csrf.disable());
+            return http.build();
+        }
     }
 }

@@ -25,7 +25,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.innate.inject.BlindBinder;
 import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -151,7 +151,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         Timer.start("JERSEY_CONTAINER_CONSTRUCTOR");
         initialized = false;
         if (jaxRsApplication instanceof ResourceConfig) {
-            ((ResourceConfig)jaxRsApplication).register(new AbstractBinder() {
+            ((ResourceConfig)jaxRsApplication).register(new BlindBinder() {
                 @Override
                 protected void configure() {
                     bindFactory(AwsProxyServletContextSupplier.class)

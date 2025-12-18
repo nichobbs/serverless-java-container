@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.inject.Singleton;
 
-import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.innate.inject.BlindBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 public class JerseyInjectionTest {
 
     // Test resource binder
-    private static class ResourceBinder extends AbstractBinder {
+    private static class ResourceBinder extends BlindBinder {
 
         @Override
         protected void configure() {
@@ -40,10 +40,11 @@ public class JerseyInjectionTest {
     }
 
     private static ResourceConfig app = new ResourceConfig().register(MultiPartFeature.class)
-                                                            .register(new ResourceBinder());
+            .register(new ResourceBinder());
 
-    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(
-            app);
+    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler
+            .getAwsProxyHandler(
+                    app);
 
     @Test
     void can_get_injected_resources() throws Exception {

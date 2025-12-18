@@ -18,7 +18,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.amazonaws.serverless.proxy.model.Headers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +31,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Default implementation of the <code>ExceptionHandler</code> object that returns AwsProxyResponse objects.
+ * Default implementation of the <code>ExceptionHandler</code> object that
+ * returns AwsProxyResponse objects.
  *
- * Returns application/json messages with a status code of 500 when the RequestReader failed to read the incoming event
- *  or if InternalServerErrorException is thrown.
- * For all other exceptions returns a 502. Responses are populated with a JSON object containing a message property.
+ * Returns application/json messages with a status code of 500 when the
+ * RequestReader failed to read the incoming event
+ * or if InternalServerErrorException is thrown.
+ * For all other exceptions returns a 502. Responses are populated with a JSON
+ * object containing a message property.
  *
  * @see ExceptionHandler
  */
@@ -44,39 +47,37 @@ public class AwsProxyExceptionHandler
 
     private Logger log = LoggerFactory.getLogger(AwsProxyExceptionHandler.class);
 
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Constants
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     static final String INTERNAL_SERVER_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase();
     static final String GATEWAY_TIMEOUT_ERROR = Response.Status.GATEWAY_TIMEOUT.getReasonPhrase();
 
-
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Variables - Private - Static
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     protected static final Headers HEADERS = new Headers();
 
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Constructors
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     static {
         HEADERS.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     }
 
-
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Implementation - ExceptionHandler
-    //-------------------------------------------------------------
-
+    // -------------------------------------------------------------
 
     @Override
     public AwsProxyResponse handle(Throwable ex) {
         log.error("Called exception handler for:", ex);
 
-        // adding a print stack trace in case we have no appender or we are running inside SAM local, where need the
+        // adding a print stack trace in case we have no appender or we are running
+        // inside SAM local, where need the
         // output to go to the stderr.
         ex.printStackTrace();
         if (ex instanceof InvalidRequestEventException || ex instanceof InternalServerErrorException) {
@@ -86,24 +87,22 @@ public class AwsProxyExceptionHandler
         }
     }
 
-
     @Override
     public void handle(Throwable ex, OutputStream stream) throws IOException {
         AwsProxyResponse response = handle(ex);
 
-        LambdaContainerHandler.getObjectMapper().writeValue(stream, response);
+        LambdaContainerHandler.getJsonMapper().writeValue(stream, response);
     }
 
-
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Methods - Protected
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     protected String getErrorJson(String message) {
 
         try {
-            return LambdaContainerHandler.getObjectMapper().writeValueAsString(new ErrorModel(message));
-        } catch (JsonProcessingException e) {
+            return LambdaContainerHandler.getJsonMapper().writeValueAsString(new ErrorModel(message));
+        } catch (JacksonException e) {
             log.error("Could not produce error JSON", e);
             return "{ \"message\": \"" + message + "\" }";
         }

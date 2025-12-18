@@ -18,7 +18,7 @@ package com.amazonaws.serverless.proxy.spring;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.context.support.GenericApplicationContext;
@@ -39,11 +39,13 @@ public class AwsSpringWebRuntimeInitializer implements ApplicationContextInitial
 	@Override
 	public void initialize(GenericApplicationContext context) {
 		Environment environment = context.getEnvironment();
-		
+
 		if (context instanceof ServletWebServerApplicationContext && isCustomRuntime(environment)) {
-			if (context.getBeanFactory().getBeanNamesForType(AwsSpringWebCustomRuntimeEventLoop.class, false, false).length == 0) {
+			if (context.getBeanFactory().getBeanNamesForType(AwsSpringWebCustomRuntimeEventLoop.class, false,
+					false).length == 0) {
 				context.registerBean(StringUtils.uncapitalize(AwsSpringWebCustomRuntimeEventLoop.class.getSimpleName()),
-						SmartLifecycle.class, () -> new AwsSpringWebCustomRuntimeEventLoop((ServletWebServerApplicationContext) context));
+						SmartLifecycle.class,
+						() -> new AwsSpringWebCustomRuntimeEventLoop((ServletWebServerApplicationContext) context));
 			}
 		}
 	}
@@ -55,8 +57,7 @@ public class AwsSpringWebRuntimeInitializer implements ApplicationContextInitial
 			logger.info("AWS Handler: " + handler);
 			try {
 				Thread.currentThread().getContextClassLoader().loadClass(handler);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				logger.debug("Will execute Lambda in Custom Runtime");
 				return true;
 			}

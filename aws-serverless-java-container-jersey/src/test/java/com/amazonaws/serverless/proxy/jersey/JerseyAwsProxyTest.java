@@ -12,7 +12,6 @@
  */
 package com.amazonaws.serverless.proxy.jersey;
 
-
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
@@ -24,8 +23,8 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -56,35 +55,34 @@ public class JerseyAwsProxyTest {
     private static final String AUTHORIZER_PRINCIPAL_ID = "test-principal-" + UUID.randomUUID().toString();
     private static final String USER_PRINCIPAL = "user1";
 
-
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static JsonMapper objectMapper = JsonMapper.builder().build();
 
     private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
-    .register(LoggingFeature.class)
-    .register(ServletRequestFilter.class)
-    .register(MultiPartFeature.class)
-    .register(new ResourceBinder())
-    .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
+            .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
+            .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
     private static ResourceConfig httpApiApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
-    .register(LoggingFeature.class)
-    .register(ServletRequestFilter.class)
-    .register(MultiPartFeature.class)
-    .register(new ResourceBinder())
-    .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
+            .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
+            .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
     private static ResourceConfig appWithoutRegisteredDependencies = new ResourceConfig()
-    .packages("com.amazonaws.serverless.proxy.jersey")
-    .register(LoggingFeature.class)
-    .register(ServletRequestFilter.class)
-    .register(MultiPartFeature.class)
-    .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
+            .packages("com.amazonaws.serverless.proxy.jersey")
+            .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
+            .register(MultiPartFeature.class)
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
 
-    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handlerWithoutRegisteredDependencies
-    = JerseyLambdaContainerHandler.getAwsProxyHandler(appWithoutRegisteredDependencies);
+    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handlerWithoutRegisteredDependencies = JerseyLambdaContainerHandler
+            .getAwsProxyHandler(appWithoutRegisteredDependencies);
 
     private static Context lambdaContext = new MockLambdaContext();
 
@@ -95,7 +93,7 @@ public class JerseyAwsProxyTest {
     }
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[] { "API_GW", "ALB", "HTTP_API" });
     }
 
     private AwsProxyRequestBuilder getRequestBuilder(String path, String method) {
@@ -142,8 +140,8 @@ public class JerseyAwsProxyTest {
     void headers_getHeaders_echo(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/headers", "GET")
-        .json()
-        .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
+                .json()
+                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -157,8 +155,8 @@ public class JerseyAwsProxyTest {
     void headers_servletRequest_echo(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/servlet-headers", "GET")
-        .json()
-        .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
+                .json()
+                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -173,9 +171,9 @@ public class JerseyAwsProxyTest {
         initJerseyAwsProxyTest(reqType);
         assumeTrue("API_GW".equals(type));
         AwsProxyRequest request = getRequestBuilder("/echo/servlet-headers", "GET")
-        .json()
-        .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-        .build();
+                .json()
+                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+                .build();
 
         AwsProxyResponse output = handlerWithoutRegisteredDependencies.proxy(request, lambdaContext);
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
@@ -187,7 +185,7 @@ public class JerseyAwsProxyTest {
     void context_servletResponse_setCustomHeader(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/servlet-response", "GET")
-        .json();
+                .json();
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -211,7 +209,7 @@ public class JerseyAwsProxyTest {
     void requestScheme_valid_expectHttps(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/scheme", "GET")
-        .json();
+                .json();
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -225,7 +223,7 @@ public class JerseyAwsProxyTest {
     void requestFilter_injectsServletRequest_expectCustomAttribute(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/filter-attribute", "GET")
-        .json();
+                .json();
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -240,8 +238,8 @@ public class JerseyAwsProxyTest {
         initJerseyAwsProxyTest(reqType);
         assumeTrue("API_GW".equals(type)); // TODO: We should figure out a way to run this for HTTP_API too
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/authorizer-principal", "GET")
-        .json()
-        .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID);
+                .json()
+                .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID);
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -255,10 +253,10 @@ public class JerseyAwsProxyTest {
         initJerseyAwsProxyTest(reqType);
         assumeTrue("API_GW".equals(type));
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/authorizer-context", "GET")
-        .json()
-        .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID)
-        .authorizerContextValue(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-        .queryString("key", CUSTOM_HEADER_KEY);
+                .json()
+                .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID)
+                .authorizerContextValue(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+                .queryString("key", CUSTOM_HEADER_KEY);
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -282,8 +280,8 @@ public class JerseyAwsProxyTest {
     void error_contentType_invalidContentType(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/json-body", "POST")
-        .header("Content-Type", "application/octet-stream")
-        .body("asdasdasd");
+                .header("Content-Type", "application/octet-stream")
+                .body("asdasdasd");
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(415, output.getStatusCode());
@@ -294,8 +292,8 @@ public class JerseyAwsProxyTest {
     void error_statusCode_methodNotAllowed(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/status-code", "POST")
-        .json()
-        .queryString("status", "201");
+                .json()
+                .queryString("status", "201");
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(405, output.getStatusCode());
@@ -303,13 +301,13 @@ public class JerseyAwsProxyTest {
 
     @MethodSource("data")
     @ParameterizedTest
-    void responseBody_responseWriter_validBody(String reqType) throws JsonProcessingException {
+    void responseBody_responseWriter_validBody(String reqType) throws JacksonException {
         initJerseyAwsProxyTest(reqType);
         SingleValueModel singleValueModel = new SingleValueModel();
         singleValueModel.setValue(CUSTOM_HEADER_VALUE);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/json-body", "POST")
-        .json()
-        .body(objectMapper.writeValueAsString(singleValueModel));
+                .json()
+                .body(objectMapper.writeValueAsString(singleValueModel));
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
@@ -323,8 +321,8 @@ public class JerseyAwsProxyTest {
     void statusCode_responseStatusCode_customStatusCode(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/status-code", "GET")
-        .json()
-        .queryString("status", "201");
+                .json()
+                .queryString("status", "201");
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(201, output.getStatusCode());
@@ -358,8 +356,8 @@ public class JerseyAwsProxyTest {
     void stripBasePath_route_shouldRouteCorrectly(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/custompath/echo/status-code", "GET")
-        .json()
-        .queryString("status", "201");
+                .json()
+                .queryString("status", "201");
         getHandler().stripBasePath("/custompath");
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(201, output.getStatusCode());
@@ -372,9 +370,9 @@ public class JerseyAwsProxyTest {
         initJerseyAwsProxyTest(reqType);
         assumeTrue(!"ALB".equals(type));
         AwsProxyRequestBuilder request = getRequestBuilder("/custompath/echo/status-code", "GET")
-        .stage("prod")
-        .json()
-        .queryString("status", "201");
+                .stage("prod")
+                .json()
+                .queryString("status", "201");
         getHandler().stripBasePath("/custompath");
         LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
         AwsProxyResponse output = executeRequest(request, lambdaContext);
@@ -388,8 +386,8 @@ public class JerseyAwsProxyTest {
     void stripBasePath_route_shouldReturn404(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/custompath/echo/status-code", "GET")
-        .json()
-        .queryString("status", "201");
+                .json()
+                .queryString("status", "201");
         getHandler().stripBasePath("/custom");
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(404, output.getStatusCode());
@@ -402,7 +400,7 @@ public class JerseyAwsProxyTest {
         initJerseyAwsProxyTest(reqType);
         assumeTrue("API_GW".equals(type));
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/security-context", "GET")
-        .authorizerPrincipal(USER_PRINCIPAL);
+                .authorizerPrincipal(USER_PRINCIPAL);
 
         AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
@@ -414,8 +412,8 @@ public class JerseyAwsProxyTest {
     void emptyStream_putNullBody_expectPutToSucceed(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/empty-stream/" + CUSTOM_HEADER_KEY + "/test/2", "PUT")
-        .nullBody()
-        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+                .nullBody()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, CUSTOM_HEADER_KEY);
@@ -427,9 +425,9 @@ public class JerseyAwsProxyTest {
         initJerseyAwsProxyTest(reqType);
         String refererValue = "test-referer";
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/referer-header", "GET")
-        .nullBody()
-        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-        .header("Referer", refererValue);
+                .nullBody()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .header("Referer", refererValue);
 
         AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
@@ -441,9 +439,9 @@ public class JerseyAwsProxyTest {
     void textPlainContent_plain_responseHonorsContentType(String reqType) {
         initJerseyAwsProxyTest(reqType);
         AwsProxyRequestBuilder req = getRequestBuilder("/echo/plain", "GET")
-        .nullBody()
-        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-        .header(HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN);
+                .nullBody()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN);
 
         AwsProxyResponse resp = executeRequest(req, lambdaContext);
         assertEquals(200, resp.getStatusCode());
@@ -460,7 +458,7 @@ public class JerseyAwsProxyTest {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
             assertNotNull(response.getValues().get(key));
             assertEquals(value, response.getValues().get(key));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing response body: " + e.getMessage());
         }
@@ -471,7 +469,7 @@ public class JerseyAwsProxyTest {
             SingleValueModel response = objectMapper.readValue(output.getBody(), SingleValueModel.class);
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing response body: " + e.getMessage());
         }

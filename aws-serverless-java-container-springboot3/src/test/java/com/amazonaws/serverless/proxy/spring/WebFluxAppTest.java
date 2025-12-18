@@ -15,7 +15,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageData;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 public class WebFluxAppTest {
 
@@ -25,7 +25,7 @@ public class WebFluxAppTest {
     private String type;
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[] { "API_GW", "ALB", "HTTP_API" });
     }
 
     public void initWebFluxAppTest(String reqType) {
@@ -55,7 +55,7 @@ public class WebFluxAppTest {
 
     @MethodSource("data")
     @ParameterizedTest
-    void messageObject_parsesObject_returnsCorrectMessage(String reqType) throws JsonProcessingException {
+    void messageObject_parsesObject_returnsCorrectMessage(String reqType) throws JacksonException {
         initWebFluxAppTest(reqType);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/message", "POST")
                 .json()

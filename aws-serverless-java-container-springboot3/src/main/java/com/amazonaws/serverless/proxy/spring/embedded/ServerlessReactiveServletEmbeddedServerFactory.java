@@ -15,7 +15,7 @@ package com.amazonaws.serverless.proxy.spring.embedded;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactory;
+import org.springframework.boot.web.server.reactive.AbstractReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.server.WebServerException;
 import org.springframework.core.Ordered;

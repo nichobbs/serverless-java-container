@@ -134,8 +134,8 @@ public class HttpApiV2ProxyRequest {
     @JsonIgnore
     public RequestSource getRequestSource() {
         return Optional.ofNullable(getRequestContext())
-            .map(HttpApiV2ProxyRequestContext::getElb)
-            .map(albContext -> RequestSource.ALB)
-            .orElse(RequestSource.API_GATEWAY);
+                .map(HttpApiV2ProxyRequestContext::getElb)
+                .map(albContext -> RequestSource.ALB)
+                .orElse(RequestSource.API_GATEWAY);
     }
 }

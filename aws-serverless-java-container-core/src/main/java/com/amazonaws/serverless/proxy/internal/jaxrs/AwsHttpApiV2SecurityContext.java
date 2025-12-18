@@ -16,8 +16,8 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,22 +52,25 @@ public class AwsHttpApiV2SecurityContext implements SecurityContext {
         }
         String[] parts = authValue.split("\\.");
         if (parts.length != 3) {
-            log.warn("Could not parse JWT token for requestId: " + SecurityUtils.crlf(event.getRequestContext().getRequestId()));
+            log.warn("Could not parse JWT token for requestId: "
+                    + SecurityUtils.crlf(event.getRequestContext().getRequestId()));
             return null;
         }
         String decodedBody = new String(Base64.getMimeDecoder().decode(parts[1]), StandardCharsets.UTF_8);
         try {
-            JsonNode parsedBody = LambdaContainerHandler.getObjectMapper().readTree(decodedBody);
+            JsonNode parsedBody = LambdaContainerHandler.getJsonMapper().readTree(decodedBody);
             if (!parsedBody.isObject() && parsedBody.has("sub")) {
-                log.debug("Could not find \"sub\" field in JWT body for requestId: " + SecurityUtils.crlf(event.getRequestContext().getRequestId()));
+                log.debug("Could not find \"sub\" field in JWT body for requestId: "
+                        + SecurityUtils.crlf(event.getRequestContext().getRequestId()));
                 return null;
             }
             String subject = parsedBody.get("sub").asText();
             return (() -> {
                 return subject;
             });
-        } catch (JsonProcessingException e) {
-            log.error("Error while attempting to parse JWT body for requestId: " + SecurityUtils.crlf(event.getRequestContext().getRequestId()), e);
+        } catch (JacksonException e) {
+            log.error("Error while attempting to parse JWT body for requestId: "
+                    + SecurityUtils.crlf(event.getRequestContext().getRequestId()), e);
             return null;
         }
 

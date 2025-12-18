@@ -2,6 +2,7 @@ package com.amazonaws.serverless.proxy.spring.securityapp;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
@@ -19,12 +20,12 @@ public class SecurityConfig
     private static BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Bean
-    public SecurityWebFilterChain securitygWebFilterChain(
+    public SecurityWebFilterChain securityWebFilterChain(
             ServerHttpSecurity http) {
-        return http.authorizeExchange()
-                .anyExchange().authenticated().and().csrf().disable()
-                .httpBasic()
-                .and().build();
+        return http.authorizeExchange((exchange) -> exchange.anyExchange().authenticated())
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(Customizer.withDefaults())
+                .build();
     }
 
     @Bean

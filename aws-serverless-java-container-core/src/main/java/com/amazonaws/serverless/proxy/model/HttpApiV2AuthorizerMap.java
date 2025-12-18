@@ -13,17 +13,17 @@
 package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -78,21 +78,21 @@ public class HttpApiV2AuthorizerMap extends HashMap<String, Object> {
 
         @Override
         public HttpApiV2AuthorizerMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-                throws IOException, JsonProcessingException {
+                throws JacksonException {
             HttpApiV2AuthorizerMap map = new HttpApiV2AuthorizerMap();
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            JsonNode node = jsonParser.objectReadContext().readTree(jsonParser);
             if (node.has(JWT_KEY)) {
-                HttpApiV2JwtAuthorizer authorizer = LambdaContainerHandler.getObjectMapper()
+                HttpApiV2JwtAuthorizer authorizer = LambdaContainerHandler.getJsonMapper()
                         .treeToValue(node.get(JWT_KEY), HttpApiV2JwtAuthorizer.class);
                 map.putJwtAuthorizer(authorizer);
             }
             if (node.has(LAMBDA_KEY)) {
-                Map<String, Object> context = LambdaContainerHandler.getObjectMapper().treeToValue(node.get(LAMBDA_KEY),
-                        TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, Object.class));
+                Map<String, Object> context = LambdaContainerHandler.getJsonMapper().treeToValue(node.get(LAMBDA_KEY),
+                        TypeFactory.createDefaultInstance().constructMapType(HashMap.class, String.class, Object.class));
                 map.put(LAMBDA_KEY, context);
             }
             if (node.has(IAM_KEY)) {
-                HttpApiV2IamAuthorizer iam_authorizer = LambdaContainerHandler.getObjectMapper()
+                HttpApiV2IamAuthorizer iam_authorizer = LambdaContainerHandler.getJsonMapper()
                         .treeToValue(node.get(IAM_KEY), HttpApiV2IamAuthorizer.class);
                 map.putIamAuthorizer(iam_authorizer);
             }
@@ -110,16 +110,16 @@ public class HttpApiV2AuthorizerMap extends HashMap<String, Object> {
 
         @Override
         public void serialize(HttpApiV2AuthorizerMap httpApiV2AuthorizerMap, JsonGenerator jsonGenerator,
-                SerializerProvider serializerProvider) throws IOException {
+                SerializationContext serializerProvider) {
             jsonGenerator.writeStartObject();
             if (httpApiV2AuthorizerMap.isJwt()) {
-                jsonGenerator.writeObjectField(JWT_KEY, httpApiV2AuthorizerMap.getJwtAuthorizer());
+                jsonGenerator.writePOJOProperty(JWT_KEY, httpApiV2AuthorizerMap.getJwtAuthorizer());
             }
             if (httpApiV2AuthorizerMap.isLambda()) {
-                jsonGenerator.writeObjectField(LAMBDA_KEY, httpApiV2AuthorizerMap.getLambdaAuthorizerContext());
+                jsonGenerator.writePOJOProperty(LAMBDA_KEY, httpApiV2AuthorizerMap.getLambdaAuthorizerContext());
             }
             if (httpApiV2AuthorizerMap.isIam()) {
-                jsonGenerator.writeObjectField(IAM_KEY, httpApiV2AuthorizerMap.get(IAM_KEY));
+                jsonGenerator.writePOJOProperty(IAM_KEY, httpApiV2AuthorizerMap.get(IAM_KEY));
             }
             jsonGenerator.writeEndObject();
         }

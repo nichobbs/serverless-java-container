@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 public class AwsProxyRequestTest {
     private static final String CUSTOM_HEADER_KEY_LOWER_CASE = "custom-header";
@@ -18,7 +18,8 @@ public class AwsProxyRequestTest {
         AwsProxyRequest req = new AwsProxyRequestBuilder()
                 .fromJsonString(getRequestJson(true, CUSTOM_HEADER_KEY_LOWER_CASE, CUSTOM_HEADER_VALUE)).build();
         assertNotNull(req.getMultiValueHeaders().get(CUSTOM_HEADER_KEY_LOWER_CASE.toUpperCase()));
-        assertEquals(CUSTOM_HEADER_VALUE, req.getMultiValueHeaders().get(CUSTOM_HEADER_KEY_LOWER_CASE.toUpperCase()).get(0));
+        assertEquals(CUSTOM_HEADER_VALUE,
+                req.getMultiValueHeaders().get(CUSTOM_HEADER_KEY_LOWER_CASE.toUpperCase()).get(0));
         assertTrue(req.isBase64Encoded());
     }
 
@@ -36,7 +37,7 @@ public class AwsProxyRequestTest {
     void serialize_base64Encoded_fieldContainsIsPrefix() throws IOException {
         AwsProxyRequest req = new AwsProxyRequestBuilder()
                 .fromJsonString(getRequestJson(true, CUSTOM_HEADER_KEY_LOWER_CASE, CUSTOM_HEADER_VALUE)).build();
-        ObjectMapper mapper = new ObjectMapper();
+        JsonMapper mapper = JsonMapper.builder().build();
         String serializedRequest = mapper.writeValueAsString(req);
 
         assertTrue(serializedRequest.contains("\"isBase64Encoded\":true"));
@@ -50,7 +51,7 @@ public class AwsProxyRequestTest {
                 "    \"headers\": {\n" +
                 "        \"Accept\": \"*/*\",\n" +
                 "        \"User-Agent\": \"PostmanRuntime/7.1.1\",\n" +
-                "        \"" + headerKey +"\":" + "\"" + headerValue + "\"\n" +
+                "        \"" + headerKey + "\":" + "\"" + headerValue + "\"\n" +
                 "    },\n" +
                 "    \"multiValueHeaders\": {\n" +
                 "        \"Accept\": [\n" +
@@ -99,38 +100,37 @@ public class AwsProxyRequestTest {
                 "        \"apiId\": \"apiId\"\n" +
                 "    },\n" +
                 "    \"body\": null,\n" +
-                "    \"isBase64Encoded\": " + (base64Encoded?"true":"false") + "\n" +
+                "    \"isBase64Encoded\": " + (base64Encoded ? "true" : "false") + "\n" +
                 "}";
     }
 
     @Test
     void deserialize_singleValuedHeaders() throws IOException {
-        AwsProxyRequest req =
-                new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).build();
+        AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).build();
 
         assertThat(req.getHeaders().get("accept"), is("*"));
     }
 
     /**
-     * Captured from a live request to an ALB with a Lambda integration with 
+     * Captured from a live request to an ALB with a Lambda integration with
      * lambda.multi_value_headers.enabled=false.
      */
     private String getSingleValueRequestJson() {
         return "{\n" + "        \"requestContext\": {\n" + "            \"elb\": {\n"
-            + "                \"targetGroupArn\": \"arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/prod-example-function/e77803ebb6d2c24\"\n"
-            + "            }\n" + "        },\n" + "        \"httpMethod\": \"PUT\",\n"
-            + "        \"path\": \"/path/to/resource\",\n" + "        \"queryStringParameters\": {},\n"
-            + "        \"headers\": {\n" + "            \"accept\": \"*\",\n"
-            + "            \"content-length\": \"17\",\n"
-            + "            \"content-type\": \"application/json\",\n"
-            + "            \"host\": \"stackoverflow.name\",\n"
-            + "            \"user-agent\": \"curl/7.77.0\",\n"
-            + "            \"x-amzn-trace-id\": \"Root=1-62e22402-3a5f246225e45edd7735c182\",\n"
-            + "            \"x-forwarded-for\": \"24.14.13.186\",\n"
-            + "            \"x-forwarded-port\": \"443\",\n"
-            + "            \"x-forwarded-proto\": \"https\",\n"
-            + "            \"x-jersey-tracing-accept\": \"true\"\n" + "        },\n"
-            + "        \"body\": \"{\\\"alpha\\\":\\\"bravo\\\"}\",\n"
-            + "        \"isBase64Encoded\": false\n" + "}      \n";
+                + "                \"targetGroupArn\": \"arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/prod-example-function/e77803ebb6d2c24\"\n"
+                + "            }\n" + "        },\n" + "        \"httpMethod\": \"PUT\",\n"
+                + "        \"path\": \"/path/to/resource\",\n" + "        \"queryStringParameters\": {},\n"
+                + "        \"headers\": {\n" + "            \"accept\": \"*\",\n"
+                + "            \"content-length\": \"17\",\n"
+                + "            \"content-type\": \"application/json\",\n"
+                + "            \"host\": \"stackoverflow.name\",\n"
+                + "            \"user-agent\": \"curl/7.77.0\",\n"
+                + "            \"x-amzn-trace-id\": \"Root=1-62e22402-3a5f246225e45edd7735c182\",\n"
+                + "            \"x-forwarded-for\": \"24.14.13.186\",\n"
+                + "            \"x-forwarded-port\": \"443\",\n"
+                + "            \"x-forwarded-proto\": \"https\",\n"
+                + "            \"x-jersey-tracing-accept\": \"true\"\n" + "        },\n"
+                + "        \"body\": \"{\\\"alpha\\\":\\\"bravo\\\"}\",\n"
+                + "        \"isBase64Encoded\": false\n" + "}      \n";
     }
 }

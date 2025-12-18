@@ -12,7 +12,6 @@
  */
 package com.amazonaws.serverless.proxy.jersey.suppliers;
 
-
 import org.glassfish.jersey.server.ContainerRequest;
 
 import jakarta.servlet.ServletContext;
@@ -24,15 +23,16 @@ import java.util.function.Supplier;
 
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
 
-
 /**
- * Implementation of Jersey's <code>Factory</code> object for <code>ServletContext</code> objects. This can be used
- * by Jersey to generate a Servlet context given an <code>AwsProxyRequest</code> event.
+ * Implementation of Jersey's <code>Factory</code> object for
+ * <code>ServletContext</code> objects. This can be used
+ * by Jersey to generate a Servlet context given an <code>AwsProxyRequest</code>
+ * event.
  *
  * <pre>
  * <code>
  *     ResourceConfig app = new ResourceConfig().packages("my.app.package")
- *         .register(new AbstractBinder() {
+ *         .register(new BlindBinder() {
  *             {@literal @}Override
  *             protected void configure() {
  *                 bindFactory(AwsProxyServletContextSupplier.class)
@@ -44,7 +44,8 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  * </pre>
  */
 public class AwsProxyServletContextSupplier implements Supplier<ServletContext> {
-    @Context ContainerRequest currentRequest;
+    @Context
+    ContainerRequest currentRequest;
 
     @Override
     public ServletContext get() {
@@ -52,7 +53,7 @@ public class AwsProxyServletContextSupplier implements Supplier<ServletContext> 
     }
 
     private ServletContext getServletContext() {
-        HttpServletRequest req = (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
+        HttpServletRequest req = (HttpServletRequest) currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
 
         if (req == null) {
             throw new InternalServerErrorException("Could not find servlet request in context");

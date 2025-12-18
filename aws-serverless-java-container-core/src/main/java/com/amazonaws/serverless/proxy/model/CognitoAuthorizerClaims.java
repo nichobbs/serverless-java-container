@@ -12,7 +12,6 @@
  */
 package com.amazonaws.serverless.proxy.model;
 
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -21,10 +20,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * This object represents the claims property in the authorizer context of a request. The claims object is normally populated
+ * This object represents the claims property in the authorizer context of a
+ * request. The claims object is normally populated
  * by a Cognito User Pool authorizer and contains the following fields:
+ * 
  * <pre>
  * "claims": {
  *     "sub": "42df3b02-29f1-4779-a3e5-eff92ff280b2",
@@ -43,9 +43,9 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CognitoAuthorizerClaims {
 
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Variables - Private
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     private Map<String, String> claims = new HashMap<>();
 
@@ -69,10 +69,9 @@ public class CognitoAuthorizerClaims {
     @JsonProperty(value = "iat")
     private String issuedAt;
 
-
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Methods - Getter/Setter
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     @JsonAnyGetter
     public String getClaim(String claim) {
@@ -84,98 +83,81 @@ public class CognitoAuthorizerClaims {
         claims.put(claim, value);
     }
 
-    public String getSubject() { return this.subject; }
-
+    public String getSubject() {
+        return this.subject;
+    }
 
     public void setSubject(String subject) {
         this.subject = subject;
     }
 
-
     public String getAudience() {
         return audience;
     }
-
 
     public void setAudience(String audience) {
         this.audience = audience;
     }
 
-
     public String getIssuer() {
         return issuer;
     }
-
 
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
 
-
     public String getTokenUse() {
         return tokenUse;
     }
-
 
     public void setTokenUse(String tokenUse) {
         this.tokenUse = tokenUse;
     }
 
-
     public String getUsername() {
         return username;
     }
-
 
     public void setUsername(String username) {
         this.username = username;
     }
 
-
     public String getEmail() {
         return email;
     }
-
 
     public void setEmail(String email) {
         this.email = email;
     }
 
-
     public boolean isEmailVerified() {
         return emailVerified;
     }
-
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
     }
 
-
     public Long getAuthTime() {
         return authTime;
     }
-
 
     public void setAuthTime(Long authTime) {
         this.authTime = authTime;
     }
 
-
     public String getExpiration() {
         return expiration;
     }
-
 
     public void setExpiration(String expiration) {
         this.expiration = expiration;
     }
 
-
     public String getIssuedAt() {
         return issuedAt;
     }
-
 
     public void setIssuedAt(String issuedAt) {
         this.issuedAt = issuedAt;

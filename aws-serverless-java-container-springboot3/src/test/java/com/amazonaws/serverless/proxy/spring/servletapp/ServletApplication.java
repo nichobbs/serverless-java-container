@@ -10,23 +10,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication(exclude = {
-        org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class
+                org.springframework.boot.security.autoconfigure.ReactiveUserDetailsServiceAutoConfiguration.class,
+                org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebSecurityAutoConfiguration.class,
+                org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration.class,
+                org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration.class,
+                org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration.class,
+                org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration.class,
+                org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration.class
 })
 @Import(MessageController.class)
 @RestController
 public class ServletApplication {
-	
-	@RequestMapping(path = "/foo/{gender}/list/{age}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String complexRequest(
-            @PathVariable("gender") String gender,
-            @PathVariable("age") String age,
-            @RequestParam("name") String name
-    ) {
-		return gender + "/" + age + "/" + name;
-	}
+
+        @RequestMapping(path = "/foo/{gender}/list/{age}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+        public String complexRequest(
+                        @PathVariable("gender") String gender,
+                        @PathVariable("age") String age,
+                        @RequestParam("name") String name) {
+                return gender + "/" + age + "/" + name;
+        }
 }

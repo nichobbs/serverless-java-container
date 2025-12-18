@@ -19,14 +19,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Default implementation of the request object from an API Gateway AWS_PROXY integration
+ * Default implementation of the request object from an API Gateway AWS_PROXY
+ * integration
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AwsProxyRequest {
 
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Variables - Private
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     private String body;
     private String version;
@@ -49,10 +50,9 @@ public class AwsProxyRequest {
         stageVariables = new HashMap<>();
     }
 
-
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Methods - Getter/Setter
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     @JsonIgnore
     public String getQueryString() {
@@ -81,16 +81,13 @@ public class AwsProxyRequest {
         return RequestSource.API_GATEWAY;
     }
 
-
     public String getBody() {
         return body;
     }
 
-
     public void setBody(String body) {
         this.body = body;
     }
-
 
     public String getResource() {
         return resource;
@@ -108,11 +105,9 @@ public class AwsProxyRequest {
         this.resource = resource;
     }
 
-
     public AwsProxyRequestContext getRequestContext() {
         return requestContext;
     }
-
 
     public void setRequestContext(AwsProxyRequestContext requestContext) {
         this.requestContext = requestContext;
@@ -151,41 +146,33 @@ public class AwsProxyRequest {
         this.headers = headers;
     }
 
-
     public Map<String, String> getPathParameters() {
         return pathParameters;
     }
-
 
     public void setPathParameters(Map<String, String> pathParameters) {
         this.pathParameters = pathParameters;
     }
 
-
     public String getHttpMethod() {
         return httpMethod;
     }
-
 
     public void setHttpMethod(String httpMethod) {
         this.httpMethod = httpMethod;
     }
 
-
     public Map<String, String> getStageVariables() {
         return stageVariables;
     }
-
 
     public void setStageVariables(Map<String, String> stageVariables) {
         this.stageVariables = stageVariables;
     }
 
-
     public String getPath() {
         return path;
     }
-
 
     public void setPath(String path) {
         this.path = path;
@@ -195,7 +182,6 @@ public class AwsProxyRequest {
     public boolean isBase64Encoded() {
         return isBase64Encoded;
     }
-
 
     public void setIsBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;

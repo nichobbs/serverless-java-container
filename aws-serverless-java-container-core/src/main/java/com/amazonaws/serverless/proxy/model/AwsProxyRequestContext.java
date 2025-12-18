@@ -12,15 +12,15 @@
  */
 package com.amazonaws.serverless.proxy.model;
 
-
 import com.amazonaws.serverless.proxy.RequestReader;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 /**
- * The API Gateway request context object. This is used by the default implementation of the AWS_PROXY integration type.
- * All of the values are part of the API Gateway $context variable so this object could be reused with custom request
+ * The API Gateway request context object. This is used by the default
+ * implementation of the AWS_PROXY integration type.
+ * All of the values are part of the API Gateway $context variable so this
+ * object could be reused with custom request
  * readers.
  *
  * @see AwsProxyRequest
@@ -29,9 +29,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AwsProxyRequestContext {
 
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Variables - Private
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     private String resourceId;
     private String apiId;
@@ -50,154 +50,125 @@ public class AwsProxyRequestContext {
 
     private AlbContext elb;
 
-
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
     // Methods - Getter/Setter
-    //-------------------------------------------------------------
+    // -------------------------------------------------------------
 
     public String getResourceId() {
         return resourceId;
     }
 
-
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
     }
-
 
     public String getApiId() {
         return apiId;
     }
 
-
     public void setApiId(String apiId) {
         this.apiId = apiId;
     }
-
 
     public String getResourcePath() {
         return resourcePath;
     }
 
-
     public void setResourcePath(String resourcePath) {
         this.resourcePath = resourcePath;
     }
-
 
     public String getHttpMethod() {
         return httpMethod;
     }
 
-
     public void setHttpMethod(String httpMethod) {
         this.httpMethod = httpMethod;
     }
-
 
     public String getRequestId() {
         return requestId;
     }
 
-
     public void setRequestId(String requestId) {
         this.requestId = requestId;
     }
-
 
     public String getExtendedRequestId() {
         return extendedRequestId;
     }
 
-
     public void setExtendedRequestId(String extendedRequestId) {
         this.extendedRequestId = extendedRequestId;
     }
-
 
     public String getAccountId() {
         return accountId;
     }
 
-
     public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
-
 
     public ApiGatewayRequestIdentity getIdentity() {
         return identity;
     }
 
-
     public void setIdentity(ApiGatewayRequestIdentity identity) {
         this.identity = identity;
     }
-
 
     public String getStage() {
         return stage;
     }
 
-
     public void setStage(String stage) {
         this.stage = stage;
     }
-    
+
     public String getPath() {
         return path;
     }
-
 
     public void setPath(String path) {
         this.path = path;
     }
 
-
     public ApiGatewayAuthorizerContext getAuthorizer() {
         return authorizer;
     }
-
 
     public void setAuthorizer(ApiGatewayAuthorizerContext authorizer) {
         this.authorizer = authorizer;
     }
 
-
     public String getProtocol() {
         return protocol;
     }
-
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
 
-
     public String getRequestTime() {
         return requestTime;
     }
-
 
     public void setRequestTime(String requestTime) {
         this.requestTime = requestTime;
     }
 
-
     public long getRequestTimeEpoch() {
         return requestTimeEpoch;
     }
-
 
     public void setRequestTimeEpoch(long requestTimeEpoch) {
         this.requestTimeEpoch = requestTimeEpoch;
     }
 
-
     public AlbContext getElb() {
         return elb;
     }
-
 
     public void setElb(AlbContext elb) {
         this.elb = elb;

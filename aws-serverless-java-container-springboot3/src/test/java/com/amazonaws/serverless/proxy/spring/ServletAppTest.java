@@ -6,7 +6,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.spring.servletapp.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -30,7 +30,7 @@ public class ServletAppTest {
     private String type;
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[] { "API_GW", "ALB", "HTTP_API" });
     }
 
     public void initServletAppTest(String reqType) {
@@ -69,8 +69,8 @@ public class ServletAppTest {
                 .body(ud);
         AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
         try {
-            System.out.println(LambdaContainerHandler.getObjectMapper().writeValueAsString(resp));
-        } catch (JsonProcessingException e) {
+            System.out.println(LambdaContainerHandler.getJsonMapper().writeValueAsString(resp));
+        } catch (JacksonException e) {
             e.printStackTrace();
         }
         assertEquals("3", resp.getBody());
@@ -131,7 +131,8 @@ public class ServletAppTest {
     @ParameterizedTest
     void getUtf8String_returnsValidUtf8String(String reqType) {
         initServletAppTest(reqType);
-        // We expect strings to come back as UTF-8 correctly because Spring itself will call the setCharacterEncoding
+        // We expect strings to come back as UTF-8 correctly because Spring itself will
+        // call the setCharacterEncoding
         // method on the response to set it to UTF-
         LambdaContainerHandler.getContainerConfig().setDefaultContentCharset(ContainerConfig.DEFAULT_CONTENT_CHARSET);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/content-type/utf8", "GET")
@@ -139,7 +140,8 @@ public class ServletAppTest {
         AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
-        assertEquals("text/plain; charset=UTF-8", resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).stream().collect(Collectors.joining(",")));
+        assertEquals("text/plain; charset=UTF-8",
+                resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).stream().collect(Collectors.joining(",")));
         assertEquals(MessageController.UTF8_RESPONSE, resp.getBody());
     }
 
@@ -176,7 +178,8 @@ public class ServletAppTest {
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         streamHandler.handleRequest(req, out, lambdaContext);
-        AwsProxyResponse resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponse.class);
+        AwsProxyResponse resp = LambdaContainerHandler.getJsonMapper().readValue(out.toByteArray(),
+                AwsProxyResponse.class);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals(MessageController.UTF8_RESPONSE, resp.getBody());
@@ -202,7 +205,8 @@ public class ServletAppTest {
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         streamHandler.handleRequest(req, out, lambdaContext);
-        AwsProxyResponse resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponse.class);
+        AwsProxyResponse resp = LambdaContainerHandler.getJsonMapper().readValue(out.toByteArray(),
+                AwsProxyResponse.class);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("{\"s\":\"" + MessageController.UTF8_RESPONSE + "\"}", resp.getBody());

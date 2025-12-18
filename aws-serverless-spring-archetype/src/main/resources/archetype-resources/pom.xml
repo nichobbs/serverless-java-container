@@ -14,10 +14,6 @@
     <url>https://github.com/aws/serverless-java-container</url>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <spring.version>6.2.6</spring.version>
-        <junit.version>5.12.1</junit.version>
         <log4j.version>2.24.2</log4j.version>
     </properties>
 
@@ -98,18 +94,6 @@
         </dependency>
 
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>${junit.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <profiles>
         <profile>
