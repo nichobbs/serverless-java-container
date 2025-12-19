@@ -1,8 +1,8 @@
 #set($dollar = '$')
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>\${groupId}</groupId>
@@ -16,10 +16,11 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.5</version>
+        <version>4.0.1</version>
     </parent>
 
     <properties>
+        <maven.compiler.release>17</maven.compiler.release>
         <java.version>17</java.version>
     </properties>
 
@@ -48,6 +49,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-webflux</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-tomcat</artifactId>
@@ -133,7 +138,8 @@
                                     <goal>copy-dependencies</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${dollar}{project.build.directory}${dollar}{file.separator}lib</outputDirectory>
+                                    <outputDirectory>
+                                        ${dollar}{project.build.directory}${dollar}{file.separator}lib</outputDirectory>
                                     <includeScope>runtime</includeScope>
                                 </configuration>
                             </execution>
@@ -151,9 +157,11 @@
                                     <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>${dollar}{project.artifactId}-${dollar}{project.version}</finalName>
+                                    <finalName>
+                                        ${dollar}{project.artifactId}-${dollar}{project.version}</finalName>
                                     <descriptors>
-                                        <descriptor>src${dollar}{file.separator}assembly${dollar}{file.separator}bin.xml</descriptor>
+                                        <descriptor>
+                                            src${dollar}{file.separator}assembly${dollar}{file.separator}bin.xml</descriptor>
                                     </descriptors>
                                     <attach>false</attach>
                                 </configuration>

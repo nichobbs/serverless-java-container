@@ -1,3 +1,5 @@
+#set($dollar = '$')
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -10,6 +12,14 @@
 
     <name>Serverless Jersey API</name>
     <url>https://github.com/aws/serverless-java-container</url>
+
+    <properties>
+        <jersey.version>4.0.0</jersey.version>
+        <jackson.version>3.0.3</jackson.version>
+        <junit.version>6.0.1</junit.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <java.version>17</java.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -35,9 +45,10 @@
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
+            <version>\${jersey.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>tools.jackson.core</groupId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-annotations</artifactId>
                 </exclusion>
                 <exclusion>
@@ -54,12 +65,13 @@
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-
+            <version>\${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
+            <version>\${jersey.version}</version>
             <!-- excluding redundant javax.inject dependency -->
             <exclusions>
                 <exclusion>
@@ -72,6 +84,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>\${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
